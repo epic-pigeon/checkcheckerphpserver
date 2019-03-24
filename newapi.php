@@ -1,6 +1,6 @@
 <?php
 
-$dbc = mysqli_connect("3.89.196.174", "checkchecker", "PrObaHeD&tH@fet@lcr3", "checkchecker") or die("failed to connect to db");
+$dbc = mysqli_connect("localhost", "checkchecker", "PrObaHeD&tH@fet@lcr3", "checkchecker") or die("failed to connect to db");
 
 $operations = [
     'get' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
