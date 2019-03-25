@@ -34,6 +34,7 @@ $operations = [
             if ($result) {
                 $id = mysqli_fetch_array($result);
                 $token = generateRandomString(20);
+                mail($query['email'], "CheckChecker", "http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token=$token");
                 $result = mysqli_query($dbc, "INSERT INTO tokens (user_id, `value`) VALUES ($id, '$token')");
                 if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
             } else $rejectMYSQLError(mysqli_error($dbc));
