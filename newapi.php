@@ -10,17 +10,17 @@ $operations = [
         } else $rejectArgumentError('table');
     },
     'createUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
-        if (isset($query['username']) && isset($query['password'])) {
+        if (isset($query['username']) && isset($query['password']) && isset($query['email'])) {
             if (isset($query['avatar'])) {
                 $result = mysqli_query($dbc,
-                    "INSERT INTO users (username, password, avatar) VALUES ('". $query["username"] ."', '". $query["password"] ."', '". $query["avatar"] ."')");
+                    "INSERT INTO users (username, password, avatar, email) VALUES ('". $query["username"] ."', '". $query["password"] ."', '". $query["avatar"] ."', '". $query['email'] ."')");
                 if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
             } else {
                 $result = mysqli_query($dbc,
-                    "INSERT INTO users (username, password) VALUES ('". $query["username"] ."', '". $query["password"] ."')");
+                    "INSERT INTO users (username, password, email) VALUES ('". $query["username"] ."', '". $query["password"] ."', '". $query['email'] ."')");
                 if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
             }
-        } else $rejectArgumentError('username', 'password');
+        } else $rejectArgumentError('username', 'password', 'email');
     },
     'changeUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['id'])) {
