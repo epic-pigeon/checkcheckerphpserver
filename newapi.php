@@ -30,7 +30,7 @@ $operations = [
                     "INSERT INTO users (username, password, email) VALUES ('". $query["username"] ."', '". $query["password"] ."', '". $query['email'] ."')");
                 //if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
             }
-            $result = mysqli_query($dbc, "SELECT id FROM users WHERE username = " . $query['username']);
+            $result = mysqli_query($dbc, "SELECT user_id FROM users WHERE username = " . $query['username']);
             if ($result) {
                 $id = mysqli_fetch_array($result);
                 $token = generateRandomString(20);
