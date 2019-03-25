@@ -12,12 +12,24 @@ function generateRandomString($length) {
     return $randomString;
 }
 
+$operations = [];
+
 $operations = [
     'get' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['table'])) {
             $result = mysqli_query($dbc, "SELECT * FROM " . $query['table']);
             if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
         } else $rejectArgumentError('table');
+    },
+    'getAll' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        $results = [];
+        foreach (
+            ['groups', 'users', 'accounts', 'categories', 'checks', 'products', 'groups-users_connections', 'operations', 'roles', 'operations-categories_connections']
+            as $value) {
+            $result = mysqli_query($dbc, "SELECT * FROM " . $value);
+            if ($result) array_push($results, $result); else $rejectMYSQLError(mysqli_error($dbc));
+        }
+        $resolve($results);
     },
     'createUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['username']) && isset($query['password']) && isset($query['email'])) {
@@ -30,12 +42,13 @@ $operations = [
                     "INSERT INTO users (username, password, email) VALUES ('". $query["username"] ."', '". $query["password"] ."', '". $query['email'] ."')");
                 //if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
             }
-            $result = mysqli_query($dbc, "SELECT user_id FROM users WHERE `name` = '" . $query['username']) . "'";
+            $result = mysqli_query($dbc, "SELECT user_id FROM users WHERE `username` = '" . $query['username'] . "'");
             if ($result) {
                 $id = mysqli_fetch_array($result)['user_id'];
                 $token = generateRandomString(20);
                 //mail($query['email'], "CheckChecker", "http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token=$token");
                 echo "http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token=$token\n";
+                echo "INSERT INTO tokens (user_id, `value`) VALUES (".$id.", '$token')";
                 $result = mysqli_query($dbc, "INSERT INTO tokens (user_id, `value`) VALUES ($id, '$token')");
                 if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
             } else $rejectMYSQLError(mysqli_error($dbc));
@@ -75,7 +88,7 @@ $operations = [
     },
     'verifyUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['token'])) {
-            $result = mysqli_query($dbc, "SELECT user_id FROM tokens WHERE `value` = '". $query['token']) ."'";
+            $result = mysqli_query($dbc, "SELECT user_id FROM tokens WHERE `value` = '". $query['token'] ."'");
             if ($result) {
                 if ($row = mysqli_fetch_array($result)) {
                     $id = $row['user_id'];
@@ -94,6 +107,15 @@ foreach ($methods as $query) if (isset($query['operation'])) {
         function ($result) {
             if ($result === true) {
                 echo "[]";
+            } else if (gettype($result) == "array") {
+                foreach ($result as $key => $value) {
+                    $toJSON = [];
+                    while ($row = mysqli_fetch_array($value)) {
+                        array_push($toJSON, $row);
+                    }
+                    $result[$key] = $toJSON;
+                }
+                echo json_encode($result);
             } else {
                 $toJSON = [];
                 while ($row = mysqli_fetch_array($result)) {
