@@ -30,7 +30,7 @@ $operations = [
                     "INSERT INTO users (username, password, email) VALUES ('". $query["username"] ."', '". $query["password"] ."', '". $query['email'] ."')");
                 //if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
             }
-            $result = mysqli_query($dbc, "SELECT user_id FROM users WHERE username = " . $query['username']);
+            $result = mysqli_query($dbc, "SELECT user_id FROM users WHERE `name` = '" . $query['username']) . "''";
             if ($result) {
                 $id = mysqli_fetch_array($result);
                 $token = generateRandomString(20);
@@ -74,7 +74,7 @@ $operations = [
     },
     'verifyUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['token'])) {
-            $result = mysqli_query($dbc, "SELECT user_id FROM tokens WHERE `value` = ". $query['token']);
+            $result = mysqli_query($dbc, "SELECT user_id FROM tokens WHERE `value` = '". $query['token']) ."'";
             if ($result) {
                 if ($row = mysqli_fetch_array($result)) {
                     $id = $row['user_id'];
