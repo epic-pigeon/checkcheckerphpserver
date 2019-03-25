@@ -27,7 +27,7 @@ $operations = [
             ['groups', 'users', 'accounts', 'categories', 'checks', 'products', 'groups-users_connections', 'operations', 'roles', 'operations-categories_connections']
             as $value) {
             $result = mysqli_query($dbc, "SELECT * FROM `" . $value . "`");
-            if ($result) array_push($results, $result); else $rejectMYSQLError(mysqli_error($dbc));
+            if ($result) $results[$value] = $result; else $rejectMYSQLError(mysqli_error($dbc));
         }
         $resolve($results);
     },
