@@ -17,7 +17,7 @@ $operations = [];
 $operations = [
     'get' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['table'])) {
-            $result = mysqli_query($dbc, "SELECT * FROM " . $query['table']);
+            $result = mysqli_query($dbc, "SELECT * FROM `" . $query['table'] . "`");
             if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
         } else $rejectArgumentError('table');
     },
@@ -26,7 +26,7 @@ $operations = [
         foreach (
             ['groups', 'users', 'accounts', 'categories', 'checks', 'products', 'groups-users_connections', 'operations', 'roles', 'operations-categories_connections']
             as $value) {
-            $result = mysqli_query($dbc, "SELECT * FROM " . $value);
+            $result = mysqli_query($dbc, "SELECT * FROM `" . $value . "`");
             if ($result) array_push($results, $result); else $rejectMYSQLError(mysqli_error($dbc));
         }
         $resolve($results);
