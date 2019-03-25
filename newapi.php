@@ -32,11 +32,10 @@ $operations = [
             }
             $result = mysqli_query($dbc, "SELECT user_id FROM users WHERE `name` = '" . $query['username']) . "'";
             if ($result) {
-                $id = mysqli_fetch_array($result)['id'];
+                $id = mysqli_fetch_array($result)['user_id'];
                 $token = generateRandomString(20);
                 //mail($query['email'], "CheckChecker", "http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token=$token");
                 echo "http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token=$token\n";
-                echo "INSERT INTO tokens (user_id, `value`) VALUES ($id, '$token')";
                 $result = mysqli_query($dbc, "INSERT INTO tokens (user_id, `value`) VALUES ($id, '$token')");
                 if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
             } else $rejectMYSQLError(mysqli_error($dbc));
