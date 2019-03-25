@@ -2,6 +2,16 @@
 
 $dbc = mysqli_connect("localhost", "checkchecker", "JJWMdF6riGuHDoVr", "checkchecker") or die("failed to connect to db");
 
+function generateRandomString($length) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $randomString;
+}
+
 $operations = [
     'get' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['table'])) {
@@ -14,12 +24,19 @@ $operations = [
             if (isset($query['avatar'])) {
                 $result = mysqli_query($dbc,
                     "INSERT INTO users (username, password, avatar, email) VALUES ('". $query["username"] ."', '". $query["password"] ."', '". $query["avatar"] ."', '". $query['email'] ."')");
-                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+                //if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
             } else {
                 $result = mysqli_query($dbc,
                     "INSERT INTO users (username, password, email) VALUES ('". $query["username"] ."', '". $query["password"] ."', '". $query['email'] ."')");
-                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+                //if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
             }
+            $result = mysqli_query($dbc, "SELECT id FROM users WHERE username = " . $query['username']);
+            if ($result) {
+                $id = mysqli_fetch_array($result);
+                $token = generateRandomString(20);
+                $result = mysqli_query($dbc, "INSERT INTO tokens (user_id, `value`) VALUES ($id, '$token')");
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else $rejectMYSQLError(mysqli_error($dbc));
         } else $rejectArgumentError('username', 'password', 'email');
     },
     'changeUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
@@ -53,6 +70,17 @@ $operations = [
                 if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
             } else $rejectArgumentError('username', 'password', 'avatar');
         } else $rejectArgumentError('id');
+    },
+    'verifyUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['token'])) {
+            $result = mysqli_query($dbc, "SELECT user_id FROM tokens WHERE `value` = ". $query['token']);
+            if ($result) {
+                if ($row = mysqli_fetch_array($result)) {
+                    $id = $row['user_id'];
+                    if (!mysqli_query($dbc, "UPDATE users SET approved = 1 WHERE user_id = ".$id)) $rejectMYSQLError(mysqli_error($dbc)); else $resolve(true);
+                } else $rejectArgumentError('token');
+            } else $rejectMYSQLError(mysqli_error($dbc));
+        }
     }
 ];
 
