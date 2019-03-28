@@ -98,16 +98,11 @@ $operations = [
         } else $rejectArgumentError('token');
     },
     'createAccount' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
-        if (isset($query['user_id']) && isset($query['name'])) {
-            if (isset($query['initial_amount'])) {
-                $result = mysqli_query($dbc,
-                    "INSERT INTO accounts (account_name, user_id, initial_amount) VALUES ('".$query['name']."', ".$query['user_id'].", ".$query['initial_amount'].")");
-            } else {
-                $result = mysqli_query($dbc,
-                    "INSERT INTO accounts (account_name, user_id) VALUES ('".$query['name']."', ".$query['user_id'].")");
-            }
+        if (isset($query['user_id']) && isset($query['name']) && isset($query['initial_amount'])) {
+            $result = mysqli_query($dbc,
+                "INSERT INTO accounts (account_name, user_id, initial_amount) VALUES ('".$query['name']."', ".$query['user_id'].", ".$query['initial_amount'].")");
             if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
-        } else $rejectArgumentError("user_id", "name");
+        } else $rejectArgumentError("user_id", "name", "initial_amount");
     }
 ];
 
