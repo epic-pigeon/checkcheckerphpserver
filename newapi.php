@@ -142,3 +142,6 @@ foreach ($methods as $query) if (isset($query['operation'])) {
         $query
     ); else echo "No such operation exists";
 }
+
+
+// dima pidor
