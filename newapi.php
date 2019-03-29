@@ -206,6 +206,70 @@ $operations = [
             } else $rejectArgumentError("name", "value");
         } else $rejectArgumentError('id');
     },
+    'createCategory' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['name'])) {
+            $result = mysqli_query($dbc,
+                "INSERT INTO categories (category_name) VALUES ('".$query['name']."'");
+            if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+        } else $rejectArgumentError("name");
+    },
+    'changeCategory' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['id'])) {
+            if (isset($query['name'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE categories SET category_name = '".$query['name']."' WHERE category_id = ".$query['id']);
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else $rejectArgumentError("name");
+        } else $rejectArgumentError('id');
+    },
+    'addCategoryToOperation' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['category_id']) && isset($query['operation_id'])) {
+            $result = mysqli_query($dbc,
+                "INSERT INTO `operations-categories_connections` (operation_id, category_name) VALUES (".$query['operation_id'].", ".$query['category_id'].")");
+            if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+        } else $rejectArgumentError('category_id', 'operation_id');
+    },
+    'createCheck' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['operation_id']) && isset($query['name'])) {
+            $result = mysqli_query($dbc,
+                "INSERT INTO checks (check_name, operation_id) VALUES ('".$query['name']."', ".$query['operation_id'].")");
+            if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+        } else $rejectArgumentError("user_id", "name", "initial_amount");
+    },
+    'changeCheck' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['id'])) {
+            if (isset($query['name'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE checks SET check_name = '".$query['name']."' WHERE check_id = ".$query['id']);
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else $rejectArgumentError("name");
+        } else $rejectArgumentError('id');
+    },
+    'createProduct' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['check_id']) && isset($query['name']) && isset($query['price']) && isset($query['amount'])) {
+            $result = mysqli_query($dbc,
+                "INSERT INTO products (product_name, check_id, price, amount)
+                        VALUES ('".$query['name']."', ".$query['check_id'].", ".$query['price'].", ".$query['amount'].")");
+            if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+        } else $rejectArgumentError("user_id", "name", "initial_amount");
+    },
+    'changeProduct' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['id'])) {
+            if (isset($query['name'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE products SET product_name = '".$query['name']."' WHERE product_id = ".$query['id']);
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else if (isset($query['price'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE products SET price = ".$query['price']." WHERE product_id = ".$query['id']);
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else if (isset($query['amount'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE products SET amount = ".$query['amount']." WHERE product_id = ".$query['id']);
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else $rejectArgumentError("name", "price", "amount");
+        } else $rejectArgumentError('id');
+    },
 ];
 
 $methods = [$_GET, $_POST];
