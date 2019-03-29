@@ -103,6 +103,19 @@ $operations = [
                 "INSERT INTO accounts (account_name, user_id, initial_amount) VALUES ('".$query['name']."', ".$query['user_id'].", ".$query['initial_amount'].")");
             if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
         } else $rejectArgumentError("user_id", "name", "initial_amount");
+    },
+    'changeAccount' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['id'])) {
+            if (isset($query['name'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE accounts SET account_name = '".$query['name']."' WHERE account_id = ".$query['id']);
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else if (isset($query['initial_amount'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE accounts SET initial_amount = ".$query['initial_amount']." WHERE account_id = ".$query['id']);
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else $rejectArgumentError("name", "initial_amount");
+        } else $rejectArgumentError('id');
     }
 ];
 
