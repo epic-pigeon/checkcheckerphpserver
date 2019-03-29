@@ -116,7 +116,56 @@ $operations = [
                 if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
             } else $rejectArgumentError("name", "initial_amount");
         } else $rejectArgumentError('id');
-    }
+    },
+    'createGroup' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['name'])) {
+            $result = mysqli_query($dbc,
+                "INSERT INTO groups (group_name) VALUES ('".$query['name']."'");
+            if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+        } else $rejectArgumentError("name");
+    },
+    'changeGroup' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['id'])) {
+            if (isset($query['name'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE groups SET group_name = '".$query['name']."' WHERE group_id = ".$query['id']);
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else $rejectArgumentError("name");
+        } else $rejectArgumentError('id');
+    },
+    "createRole" => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['name']) && isset($query['permissions'])) {
+            $result = mysqli_query($dbc,
+                "INSERT INTO roles (role_name, role_permissions) VALUES ('".$query['name']."', ".$query['permissions'].")");
+            if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+        } else $rejectArgumentError("name", "permissions");
+    },
+    'changeRole' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['id'])) {
+            if (isset($query['name'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE roles SET role_name = '".$query['name']."' WHERE role_id = ".$query['id']);
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else if (isset($query['permissions'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE roles SET role_permissions = ".$query['permissions']." WHERE role_id = ".$query['id']);
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else $rejectArgumentError("name", "permissions");
+        } else $rejectArgumentError('id');
+    },
+    'addUserToGroup' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['user_id']) && isset($query['group_id'])) {
+            if (isset($query['role_id'])) {
+                $result = mysqli_query($dbc,
+                    "INSERT INTO `groups-users_connections` (user_id, group_id, role_id) VALUES (".$query['user_id'].", ".$query['group_id'].", ".$query['role_id'].")");
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else {
+                $result = mysqli_query($dbc,
+                    "INSERT INTO `groups-users_connections` (user_id, group_id) VALUES (".$query['user_id'].", ".$query['group_id'].")");
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            }
+        } else $rejectArgumentError('user_id', "group_id");
+    },
 ];
 
 $methods = [$_GET, $_POST];
