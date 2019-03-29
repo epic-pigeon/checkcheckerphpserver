@@ -166,6 +166,46 @@ $operations = [
             }
         } else $rejectArgumentError('user_id', "group_id");
     },
+    'changeUserRole' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['user_id']) && isset($query['group_id']) && isset($query['role_id'])) {
+            $result = mysqli_query($dbc,
+                "UPDATE `groups-users_connections` SET role_id = '".$query['role_id']."' WHERE group_id = ".$query['group_id']." AND user_id = ".$query['user_id']);
+            if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+        } else $rejectArgumentError('user_id', "group_id", 'role_id');
+    },
+    'deleteUserFromGroup' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['user_id']) && isset($query['group_id'])) {
+            $result = mysqli_query($dbc,
+                "DELETE FROM `groups-users_connections` WHERE user_id = ".$query['user_id']." AND group_id = ".$query['group_id']);
+            if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+        } else $rejectArgumentError('user_id', 'group_id');
+    },
+    'createOperation' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['name']) && isset($query['account_id'])) {
+            if (isset($query['value'])) {
+                $result = mysqli_query($dbc,
+                    "INSERT INTO operations (operation_name, account_id, `value`) VALUES ('".$query['name']."', ".$query['account_id'].", ".$query['value'].")");
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else {
+                $result = mysqli_query($dbc,
+                    "INSERT INTO operations (operation_name, account_id) VALUES ('".$query['name']."', ".$query['account_id'].")");
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            }
+        } else $rejectArgumentError('name', 'account_id');
+    },
+    'changeOperation' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['id'])) {
+            if (isset($query['name'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE operations SET operation_name = '".$query['name']."' WHERE operation_id = ".$query['id']);
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else if (isset($query['value'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE operations SET `value` = ".$query['value']." WHERE operation_id = ".$query['id']);
+                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            } else $rejectArgumentError("name", "value");
+        } else $rejectArgumentError('id');
+    },
 ];
 
 $methods = [$_GET, $_POST];
