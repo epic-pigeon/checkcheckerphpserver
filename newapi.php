@@ -225,7 +225,7 @@ $operations = [
     'addCategoryToOperation' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['category_id']) && isset($query['operation_id'])) {
             $result = mysqli_query($dbc,
-                "INSERT INTO `operations-categories_connections` (operation_id, category_name) VALUES (".$query['operation_id'].", ".$query['category_id'].")");
+                "INSERT INTO `operations-categories_connections` (operation_id, category_id) VALUES (".$query['operation_id'].", ".$query['category_id'].")");
             if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
         } else $rejectArgumentError('category_id', 'operation_id');
     },
