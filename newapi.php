@@ -208,6 +208,7 @@ $operations = [
     },
     'createCategory' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['name'])) {
+            echo "INSERT INTO categories (category_name) VALUES ('".$query['name']."'";
             $result = mysqli_query($dbc,
                 "INSERT INTO categories (category_name) VALUES ('".$query['name']."'");
             if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
