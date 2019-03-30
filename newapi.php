@@ -14,6 +14,24 @@ function generateRandomString($length) {
 
 $operations = [];
 
+function executeInsert($dbc, $table, $args, $resolve, $rejectMYSQLError) {
+    $query = "INSERT INTO `$table` (";
+    $array = [];
+    foreach ($args as $k => $v) {
+        array_push($array, "`".$k."`");
+    }
+    $query .= implode(", ", $array);
+    $query .= ") VALUES (";
+    $array = [];
+    foreach ($args as $k => $v) {
+        array_push($array, $v);
+    }
+    $query .= implode(", ", $array);
+    $query .= ")";
+    $result = mysqli_query($dbc, $query);
+    if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+}
+
 $operations = [
     'get' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['table'])) {
@@ -182,15 +200,13 @@ $operations = [
     },
     'createOperation' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['name']) && isset($query['account_id'])) {
-            if (isset($query['value'])) {
-                $result = mysqli_query($dbc,
-                    "INSERT INTO operations (operation_name, account_id, `value`) VALUES ('".$query['name']."', ".$query['account_id'].", ".$query['value'].")");
-                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
-            } else {
-                $result = mysqli_query($dbc,
-                    "INSERT INTO operations (operation_name, account_id) VALUES ('".$query['name']."', ".$query['account_id'].")");
-                if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
-            }
+            $args = [
+                "operation_name" => "'".$query["name"]."'",
+                "account_id" => $query['account_id']
+            ];
+            if (isset($query['value'])) $args['value'] = $query['value'];
+            if (isset($query['currency_id'])) $args['currency_id'] = $query['currency_id'];
+            executeInsert($dbc, "operations", $args, $resolve, $rejectMYSQLError);
         } else $rejectArgumentError('name', 'account_id');
     },
     'changeOperation' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
