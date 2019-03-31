@@ -310,7 +310,7 @@ $result = mysqli_query($dbc, "SELECT * FROM `currencies`");
 //if ($result) echo $result;
 $toJSON = [];
 while ($row = mysqli_fetch_array($result)) {
-
+    echo $row['name'];
     array_push($toJSON, $row);
 }
 echo json_encode($toJSON);
