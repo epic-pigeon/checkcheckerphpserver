@@ -119,7 +119,7 @@ $operations = [
         if (isset($query['user_id']) && isset($query['name']) && isset($query['initial_amount'])) {
             $args = [
                 "user_id" => $query["user_id"],
-                "name" => "'".$query["name"]."'",
+                "account_name" => "'".$query["name"]."'",
                 "initial_amount" => $query["initial_amount"]
             ];
             if (isset($query['currency_id'])) $args['currency_id'] = $query['currency_id'];
