@@ -289,6 +289,18 @@ $operations = [
             } else $rejectArgumentError("name", "price", "amount");
         } else $rejectArgumentError('id');
     },
+    'deleteOperation' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['id'])) {
+            $result = mysqli_query($dbc, "DELETE FROM operations WHERE operation_id = ".$query['id']);
+            if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+        } else $rejectArgumentError("user_id", "name", "initial_amount");
+    },
+    'deleteAccount' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['id'])) {
+            $result = mysqli_query($dbc, "DELETE FROM accounts WHERE account_id = ".$query['id']);
+            if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+        } else $rejectArgumentError("user_id", "name", "initial_amount");
+    },
 ];
 
 $methods = [$_GET, $_POST];
