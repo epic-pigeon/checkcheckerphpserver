@@ -313,7 +313,7 @@ while ($row = mysqli_fetch_array($result)) {
     echo $row['name'];
     array_push($toJSON, $row);
 }
-echo json_encode($toJSON);
+echo $toJSON[150]['name'];
 
 
 $methods = [$_GET, $_POST];
