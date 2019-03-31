@@ -4,6 +4,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 $dbc = mysqli_connect("localhost", "checkchecker", "JJWMdF6riGuHDoVr", "checkchecker") or die("failed to connect to db");
+mysqli_set_charset($dbc, 'utf8');
 
 function generateRandomString($length) {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -305,16 +306,6 @@ $operations = [
         } else $rejectArgumentError("user_id", "name", "initial_amount");
     },
 ];
-
-$result = mysqli_query($dbc, "SELECT * FROM `currencies`");
-//if ($result) echo $result;
-$toJSON = [];
-while ($row = mysqli_fetch_array($result)) {
-    echo $row['name'];
-    array_push($toJSON, $row);
-}
-echo $toJSON[150]['name'];
-
 
 $methods = [$_GET, $_POST];
 
