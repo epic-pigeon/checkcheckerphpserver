@@ -303,6 +303,9 @@ $operations = [
     },
 ];
 
+$result = mysqli_query($dbc, "SELECT * FROM `currencies`");
+if ($result) echo $result;
+
 $methods = [$_GET, $_POST];
 
 foreach ($methods as $query) if (isset($query['operation'])) {
