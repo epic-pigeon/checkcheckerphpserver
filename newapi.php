@@ -117,9 +117,13 @@ $operations = [
     },
     'createAccount' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['user_id']) && isset($query['name']) && isset($query['initial_amount'])) {
-            $result = mysqli_query($dbc,
-                "INSERT INTO accounts (account_name, user_id, initial_amount) VALUES ('".$query['name']."', ".$query['user_id'].", ".$query['initial_amount'].")");
-            if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
+            $args = [
+                "user_id" => $query["user_id"],
+                "name" => "'".$query["name"]."'",
+                "initial_amount" => $query["initial_amount"]
+            ];
+            if (isset($query['currency_id'])) $args['currency_id'] = $query['currency_id'];
+            executeInsert($dbc, 'accounts', $args, $resolve, $rejectMYSQLError);
         } else $rejectArgumentError("user_id", "name", "initial_amount");
     },
     'changeAccount' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
@@ -205,7 +209,6 @@ $operations = [
                 "account_id" => $query['account_id']
             ];
             if (isset($query['value'])) $args['value'] = $query['value'];
-            if (isset($query['currency_id'])) $args['currency_id'] = $query['currency_id'];
             executeInsert($dbc, "operations", $args, $resolve, $rejectMYSQLError);
         } else $rejectArgumentError('name', 'account_id');
     },
