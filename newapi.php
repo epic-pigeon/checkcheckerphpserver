@@ -6,6 +6,16 @@ error_reporting(E_ALL);
 $dbc = mysqli_connect("localhost", "checkchecker", "JJWMdF6riGuHDoVr", "checkchecker") or die("failed to connect to db");
 mysqli_set_charset($dbc, 'utf8');
 
+$socket = stream_socket_server("tcp://0.0.0.0:8000", $errno, $errstr);
+
+if (!$socket) {
+    die("$errstr ($errno)\n");
+}
+
+while ($connect = stream_socket_accept($socket, -1)) {
+
+}
+
 function generateRandomString($length) {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $charactersLength = strlen($characters);
@@ -315,6 +325,11 @@ foreach ($methods as $query) if (isset($query['operation'])) {
         function ($result) {
             if ($result === true) {
                 echo "[]";
+                $socket = stream_socket_server("tcp://0.0.0.0:8000", $errno, $errstr);
+
+                if ($socket) while ($connect = stream_socket_accept($socket, -1)) {
+                    fwrite($connect, '{"type":"update"}');
+                }
             } else if (gettype($result) == "array") {
                 foreach ($result as $key => $value) {
                     $toJSON = [];
