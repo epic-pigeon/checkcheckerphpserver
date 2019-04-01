@@ -325,7 +325,7 @@ foreach ($methods as $query) if (isset($query['operation'])) {
         function ($result) {
             if ($result === true) {
                 echo "[]";
-                $socket = stream_socket_server("tcp://0.0.0.0:8000", $errno, $errstr);
+                $socket = stream_socket_server("tcp://3.89.196.174:8080", $errno, $errstr);
 
                 if ($socket) while ($connect = stream_socket_accept($socket, -1)) {
                     fwrite($connect, '{"type":"update"}');
