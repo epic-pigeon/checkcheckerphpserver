@@ -51,7 +51,7 @@ $operations = [
             $result = mysqli_query($dbc, "SELECT * FROM `" . $value . "`");
             if ($result) $results[$value] = $result; else $rejectMYSQLError(mysqli_error($dbc));
         }
-        $resolve($results);
+        $resolve($results, $query);
     },
     'createUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['username']) && isset($query['password']) && isset($query['email'])) {
