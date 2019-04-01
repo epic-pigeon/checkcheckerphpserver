@@ -316,7 +316,7 @@ foreach ($methods as $query) if (isset($query['operation'])) {
             if ($result === true) {
                 echo "[]";
                 $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-                socket_connect($socket, '127.0.0.1', 8080);
+                socket_connect($socket, '127.0.0.1', 6969);
                 socket_write($socket, '{"type":"update"}');
             } else if (gettype($result) == "array") {
                 foreach ($result as $key => $value) {
