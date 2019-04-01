@@ -146,7 +146,7 @@ $operations = [
     'createGroup' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['name'])) {
             $result = mysqli_query($dbc,
-                "INSERT INTO groups (group_name) VALUES ('".$query['name']."'");
+                "INSERT INTO groups (group_name) VALUES ('".$query['name']."')");
             if ($result) $resolve($result); else $rejectMYSQLError(mysqli_error($dbc));
         } else $rejectArgumentError("name");
     },
