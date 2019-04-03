@@ -319,7 +319,6 @@ foreach ($methods as $query) if (isset($query['operation'])) {
                 socket_connect($socket, '127.0.0.1', 8080);
                 $msg = ["type" => "update"];
                 if (isset($query['client_id'])) $msg['client_id'] = $query['client_id'];
-                echo json_encode($msg);
                 socket_write($socket, json_encode($msg));
             } else if (gettype($result) == "array") {
                 foreach ($result as $key => $value) {
