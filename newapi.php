@@ -316,7 +316,7 @@ foreach ($methods as $query) if (isset($query['operation'])) {
             if ($result === true) {
                 echo "[]";
                 $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-                socket_connect($socket, '127.0.0.1', 6969);
+                socket_connect($socket, '127.0.0.1', 8080);
                 $msg = ["type" => "update"];
                 if (isset($query['client_id'])) $msg['client_id'] = $query['client_id'];
                 socket_write($socket, json_encode($msg));
