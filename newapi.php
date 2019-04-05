@@ -181,16 +181,24 @@ $operations = [
     },
     'addUserToGroup' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['user_id']) && isset($query['group_id'])) {
-            if (isset($query['role_id'])) {
-                $result = mysqli_query($dbc,
-                    "INSERT INTO `groups-users_connections` (user_id, group_id, role_id) VALUES (".$query['user_id'].", ".$query['group_id'].", ".$query['role_id'].")");
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
-            } else {
                 $result = mysqli_query($dbc,
                     "INSERT INTO `groups-users_connections` (user_id, group_id) VALUES (".$query['user_id'].", ".$query['group_id'].")");
                 if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
-            }
         } else $rejectArgumentError('user_id', "group_id");
+    },
+    'addRoleToUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['user_id']) && isset($query['group_id']) && isset($query['role_id'])) {
+            $result = mysqli_query($dbc,
+                "INSERT INTO `groups-users_connections` (user_id, group_id, role_id) VALUES (".$query['user_id'].", ".$query['group_id'].", ".$query['role_id'].")");
+            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+        } else $rejectArgumentError('user_id', "group_id", 'role_id');
+    },
+    'deleteRoleFromUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['user_id']) && isset($query['group_id']) && isset($query['role_id'])) {
+            $result = mysqli_query($dbc,
+                "DELETE FROM `groups-users_connections` WHERE user_id = ".$query['user_id']." AND group_id = ".$query['group_id']." AND role_id = ".$query['role_id']);
+            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+        } else $rejectArgumentError('user_id', "group_id", 'role_id');
     },
     'changeUserRole' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['user_id']) && isset($query['group_id']) && isset($query['role_id'])) {
