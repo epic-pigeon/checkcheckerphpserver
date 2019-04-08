@@ -46,7 +46,7 @@ $operations = [
     'getAll' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         $results = [];
         foreach (
-            ['groups', 'users', 'accounts', 'categories', 'checks', 'products', 'groups-users_connections', 'operations', 'roles', 'operations-categories_connections', 'currencies']
+            ['labels', 'groups', 'users', 'accounts', 'categories', 'checks', 'products', 'groups-users_connections', 'operations', 'roles', 'operations-categories_connections', 'currencies']
             as $value) {
             $result = mysqli_query($dbc, "SELECT * FROM `" . $value . "`");
             if ($result) $results[$value] = $result; else $rejectMYSQLError(mysqli_error($dbc));
