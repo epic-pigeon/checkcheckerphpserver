@@ -105,6 +105,10 @@ $operations = [
                 $result = mysqli_query($dbc,
                     "UPDATE users SET avatar = '". $query['avatar'] ."' WHERE user_id = " . $query['id']);
                 if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            } else if (isset($query['email'])) {
+                $result = mysqli_query($dbc,
+                    "UPDATE users SET email = '". $query['email'] ."' WHERE user_id = " . $query['id']);
+                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
             } else $rejectArgumentError('username', 'password', 'avatar');
         } else $rejectArgumentError('id');
     },
