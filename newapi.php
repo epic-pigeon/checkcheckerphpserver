@@ -28,7 +28,7 @@ function executeInsert($dbc, $table, $args, $resolve, $rejectMYSQLError) {
     $query .= ") VALUES (";
     $array = [];
     foreach ($args as $k => $v) {
-        array_push($array, $v);
+        array_push($array, "'".$v."'");
     }
     $query .= implode(", ", $array);
     $query .= ")";
@@ -55,15 +55,18 @@ $operations = [
     },
     'createUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['username']) && isset($query['password']) && isset($query['email'])) {
+            $args = [
+                "username" => $query['username'],
+                "password" => $query['password'],
+                "email" => $query['email'],
+            ];
             if (isset($query['avatar'])) {
-                $result = mysqli_query($dbc,
-                    "INSERT INTO users (username, password, avatar, email) VALUES ('". $query["username"] ."', '". $query["password"] ."', '". $query["avatar"] ."', '". $query['email'] ."')");
-                //if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
-            } else {
-                $result = mysqli_query($dbc,
-                    "INSERT INTO users (username, password, email) VALUES ('". $query["username"] ."', '". $query["password"] ."', '". $query['email'] ."')");
-                //if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                $args['avatar'] = $query['avatar'];
             }
+            if (isset($query['average_income'])) {
+                $args['average_income'] = $query['average_income'];
+            }
+            executeInsert($dbc, "users", $args, function(){}, $rejectMYSQLError);
             $result = mysqli_query($dbc, "SELECT user_id FROM users WHERE `username` = '" . $query['username'] . "'");
             if ($result) {
                 $id = mysqli_fetch_array($result)['user_id'];
@@ -127,7 +130,7 @@ $operations = [
         if (isset($query['user_id']) && isset($query['name']) && isset($query['initial_amount'])) {
             $args = [
                 "user_id" => $query["user_id"],
-                "account_name" => "'".$query["name"]."'",
+                "account_name" => $query["name"],
                 "initial_amount" => $query["initial_amount"]
             ];
             if (isset($query['currency_id'])) $args['currency_id'] = $query['currency_id'];
@@ -221,7 +224,7 @@ $operations = [
     'createOperation' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['name']) && isset($query['account_id'])) {
             $args = [
-                "operation_name" => "'".$query["name"]."'",
+                "operation_name" => $query["name"],
                 "account_id" => $query['account_id']
             ];
             if (isset($query['value'])) $args['value'] = $query['value'];
