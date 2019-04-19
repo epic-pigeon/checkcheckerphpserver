@@ -214,31 +214,36 @@ foreach ($methods as $query) if (isset($query['operation'])) {
     $name = $query['operation'];
     if (isset($operations[$name])) $operations[$name](
         function ($result) {
+            $output = null;
             if ($result === true) {
-                echo "[]";
+                $output = [];
             } else if (gettype($result) == "array") {
                 foreach ($result as $key => $value) {
                     $toJSON = [];
                     while ($row = mysqli_fetch_array($value)) {
                         array_push($toJSON, $row);
                     }
-                    $result[$key] = $toJSON;
+                    $output[$key] = $toJSON;
                 }
-                echo json_encode($result);
             } else {
                 $toJSON = [];
                 while ($row = mysqli_fetch_array($result)) {
 
                     array_push($toJSON, $row);
                 }
-                echo json_encode($toJSON);
+                $output = $toJSON;
             }
+            $out = [
+                'success' => 'true',
+                'result' => $output
+            ];
+            echo json_encode($out);
         },
         function (...$errors) {
-            echo 'Bad arguments: ' . implode(", ", $errors);
+            echo '{"success":"false","error":"Bad arguments: ' . implode(", ", $errors) . '"}';
         },
         function ($err) {
-            echo 'MYSQL error: '. $err;
+            echo '{"success":"false","error":"MySQL error: ' . $err . '"}';
         },
         $dbc,
         $query
