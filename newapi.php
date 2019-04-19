@@ -28,7 +28,7 @@ function executeInsert($dbc, $table, $args, $resolve, $rejectMYSQLError) {
     $query .= ") VALUES (";
     $array = [];
     foreach ($args as $k => $v) {
-        array_push($array, "'".$v."'");
+        array_push($array, "'".mysqli_real_escape_string($dbc, $v)."'");
     }
     $query .= implode(", ", $array);
     $query .= ")";
