@@ -1,5 +1,8 @@
 <?php
 
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 require_once 'Mail.php';
 
 function sendConfirmation($token, $email) {
@@ -24,8 +27,6 @@ function sendConfirmation($token, $email) {
     $smtp->send($to, $headers, $body);
 }
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 
 $dbc = mysqli_connect("localhost", "checkchecker", "JJWMdF6riGuHDoVr", "checkchecker") or die("failed to connect to db");
 mysqli_set_charset($dbc, 'utf8');
