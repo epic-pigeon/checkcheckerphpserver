@@ -165,7 +165,7 @@ $operations = [
             if ($result) {
                 if ($row = mysqli_fetch_array($result)) {
                     $id = $row['user_id'];
-                    if (!mysqli_query($dbc, "UPDATE users SET approved = 1 WHERE user_id = ".$id)) $rejectMYSQLError(mysqli_error($dbc)); else $resolve(true);
+                    if (!mysqli_query($dbc, "UPDATE users SET approved = 1 WHERE user_id = ".$id)) $rejectMYSQLError(mysqli_error($dbc)); else $resolve(true, $query);
                     echo "<script>window.close()</script>";
                 } else $rejectArgumentError('token');
             } else $rejectMYSQLError(mysqli_error($dbc));
