@@ -161,8 +161,8 @@ $operations = [
             if ($result) {
                 if ($row = mysqli_fetch_array($result)) {
                     $id = $row['user_id'];
-                    if (!mysqli_query($dbc, "UPDATE users SET approved = 1 WHERE user_id = ".$id)) $rejectMYSQLError(mysqli_error($dbc)); else $resolve(true, $query);
-                    echo "<script>window.close()</script>";
+                    if (!(mysqli_query($dbc, "UPDATE users SET approved = 1 WHERE user_id = ".$id) && mysqli_query($dbc, "DELETE FROM tokens WHERE user_id = ".$id))) $rejectMYSQLError(mysqli_error($dbc)); else $resolve(true, $query);
+                    echo "<script>window.history.back();window.close()</script>";
                 } else $rejectArgumentError('token');
             } else $rejectMYSQLError(mysqli_error($dbc));
         } else $rejectArgumentError('token');
