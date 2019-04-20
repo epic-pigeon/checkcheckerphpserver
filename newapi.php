@@ -23,7 +23,7 @@ function sendConfirmation($token, $email) {
     ';
     $mail = new PHPMailer();
     $mail->isSMTP();
-    $mail->SMTPDebug = 0;
+    $mail->SMTPDebug = 1;
     $mail->SMTPAuth = true;
     $mail->isHTML(true);
     $mail->SMTPSecure = 'ssl'; // secure transfer enabled REQUIRED for GMail
