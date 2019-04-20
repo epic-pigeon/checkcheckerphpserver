@@ -410,8 +410,8 @@ foreach ($methods as $query) if (isset($query['operation'])) {
         );
     } catch (\Exception $e) {
         echo '{"success":"false", "error":"'.$e->getMessage().'"}';
-    }
-} else echo '{"success":"false", "error":"No such operation exists"}';
+    } else echo '{"success":"false", "error":"No such operation exists"}';
+}
 
 
 
