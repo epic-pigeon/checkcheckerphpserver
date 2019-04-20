@@ -29,7 +29,11 @@ function sendConfirmation($token, $email) {
     $mail->Subject = $subject;
     $mail->Body = $body;
     $mail->addAddress($to);
-    $mail->send();
+    try {
+        $mail->send();
+    } catch (\PHPMailer\PHPMailer\Exception $e) {
+        echo $e->getMessage();
+    }
 }
 
 
@@ -97,7 +101,7 @@ $operations = [
                 $args['average_income'] = $query['average_income'];
             }
             executeInsert($dbc, "users", $args, function(){}, $rejectMYSQLError);
-            $result = mysqli_query($dbc, "SELECT user_id FROM users WHERE `username` = '" . $query['username'] . "'");
+            $result = mysqli_query($dbc, "SELECT user_id, email FROM users WHERE `username` = '" . $query['username'] . "'");
             if ($result) {
                 $arr = mysqli_fetch_array($result);
                 $id = $arr['user_id'];
