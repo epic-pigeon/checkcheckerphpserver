@@ -98,7 +98,7 @@ $operations = [
                 $email = $arr['email'];
                 $token = generateRandomString(20);
 
-
+                sendConfirmation($token, $email);
 
                 $result = mysqli_query($dbc, "INSERT INTO tokens (user_id, `value`) VALUES ($id, '$token')");
                 if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
