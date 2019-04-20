@@ -3,11 +3,16 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'phpmailer/src/Exception.php';
+require 'phpmailer/src/PHPMailer.php';
+require 'phpmailer/src/SMTP.php';
 
 define('GUSER', 'noreply.checkchecker@gmail.com'); // GMail username
 define('GPWD', 'wkvaJ?46msbYAbbT'); // GMail password
 
-require_once 'phpmailer/PHPMailer.php';
 
 function sendConfirmation($token, $email) {
     $from = "no-reply@checkchecker.com";
@@ -16,7 +21,7 @@ function sendConfirmation($token, $email) {
     $body = '
         Click <a href="http://3.89.196.174/checkchecker/newapi.php?operation=verifyToken&token='.$token.'">here</a> to confirm your account
     ';
-    $mail = new \PHPMailer\PHPMailer\PHPMailer();
+    $mail = new PHPMailer();
     $mail->isSMTP();
     $mail->SMTPDebug = 1;
     $mail->SMTPAuth = true;
