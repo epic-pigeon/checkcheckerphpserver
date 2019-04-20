@@ -3,28 +3,33 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-require_once 'Mail.php';
+
+define('GUSER', 'noreply.checkchecker@gmail.com'); // GMail username
+define('GPWD', 'wkvaJ?46msbYAbbT'); // GMail password
+
+require_once 'phpmailer/PHPMailer.php';
 
 function sendConfirmation($token, $email) {
-    $from = "<no-reply@checkchecker.com>";
-    $to   = "<" . $email . ">";
+    $from = "no-reply@checkchecker.com";
+    $to   = $email;
     $subject = "Confirm registration";
     $body = '
         Click <a href="http://3.89.196.174/checkchecker/newapi.php?operation=verifyToken&token='.$token.'">here</a> to confirm your account
     ';
-    $headers = [
-        'From' => $from,
-        'To' => $to,
-        'Subject' => $subject
-    ];
-    $smtp = Mail::factory('smtp', [
-        'host' => 'ssl://smtp.gmail.com',
-        'port' => '465',
-        'auth' => true,
-        'username' => 'noreply.checkchecker@gmail.com',
-        'password' => 'wkvaJ?46msbYAbbT'
-    ]);
-    $smtp->send($to, $headers, $body);
+    $mail = new \PHPMailer\PHPMailer\PHPMailer();
+    $mail->isSMTP();
+    $mail->SMTPDebug = 1;
+    $mail->SMTPAuth = true;
+    $mail->SMTPSecure = 'ssl'; // secure transfer enabled REQUIRED for GMail
+    $mail->Host = 'smtp.gmail.com';
+    $mail->Port = 465;
+    $mail->Username = GUSER;
+    $mail->Password = GPWD;
+    $mail->setFrom($from, "CheckChecker");
+    $mail->Subject = $subject;
+    $mail->Body = $body;
+    $mail->addAddress($to);
+    $mail->send();
 }
 
 
