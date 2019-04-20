@@ -1019,7 +1019,7 @@ function sendConfirmation($token, $email, $username) {
                                                                 <h2 class="welcome-subcontent"
                                                                     style="color: #6F7881; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 300; line-height: 22px; margin: 0; padding: 0; text-align: left; width: 100%; word-wrap: normal"
                                                                     align="left">
-                                                                    We\'ve finished setting up your Universe account.
+                                                                    We\'ve finished setting up your CheckChecker account.
                                                                     Just confirm your email to get started!
                                                                 </h2>
                                                             </th>
@@ -1072,7 +1072,7 @@ function sendConfirmation($token, $email, $username) {
                                                                                     <td style="-moz-hyphens: auto; -webkit-hyphens: auto; background: #4E78F1; border: 2px none #4e78f1; border-collapse: collapse !important; border-radius: 6px; color: #FFFFFF; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; hyphens: auto; line-height: 1.3; margin: 0; padding: 0; text-align: left; vertical-align: top; word-wrap: break-word"
                                                                                         align="left" bgcolor="#4E78F1"
                                                                                         valign="top">
-                                                                                        <a href="http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token'.$token.'"
+                                                                                        <a href="http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token='.$token.'"
                                                                                            style="border: 0 solid #4e78f1; border-radius: 6px; color: #FFFFFF; display: inline-block; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: bold; line-height: 1.3; margin: 0; padding: 13px 0; text-align: center; text-decoration: none; width: 100%"
                                                                                            target="_blank">
                                                                                             <p class="text-center"
