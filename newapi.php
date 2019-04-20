@@ -14,13 +14,74 @@ define('GUSER', 'no.reply.checkchecker0@gmail.com'); // GMail username
 define('GPWD', 'F429D420086F70A3B72B10BFF0446D87DEA2A385AD9EA49A135E547414D91CC2'); // GMail password
 
 
-function sendConfirmation($token, $email) {
+function sendConfirmation($token, $email, $username) {
     $from = "no-reply@checkchecker.com";
     $to   = $email;
     $subject = "Confirm registration";
     $body = '
-        Click <a href="http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token='.$token.'">here</a> to confirm your account
-    ';
+<style>
+    * {
+        font-family: Verdana, sans-serif;
+    }
+    span {
+        display: inline-block;
+    }
+    .main {
+        background-color: #5d8fff;
+        margin-left: 5%;
+        margin-right: 5%;
+        text-align: center;
+        color: white;
+        height: 360px;
+    }
+    .welcome {
+        margin-top: 70px;
+        margin-bottom: 35px;
+        font-size: x-large;
+    }
+    .button {
+        background-color: #70d500;
+        color: azure;
+        width: 33%;
+        height: 15%;
+        margin: auto;
+        display: flex;
+        align-items: center;
+        justify-items: center;
+    }
+    .button-text {
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .text {
+        margin-bottom: 8%;
+    }
+
+    a, a:hover, a:visited {
+        text-decoration: none;
+        color: white;
+        font-weight: 100;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-items: center;
+    }
+    html, body {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<div class="header"></div>
+<div class="main">
+    <span class="welcome">Welcome to CheckChecker</span><br>
+    <span class="text">Hi username, welcome to CheckChecker, please confirm your email address to get started:</span><br>
+    <div class="button"><a href="http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token='.$token.'">
+        <span class="button-text">Confirm my email</span>
+    </a></div>
+</div>
+<div class="footer"></div>
+';
     $mail = new PHPMailer();
     $mail->isSMTP();
     $mail->SMTPDebug = 0;
@@ -112,7 +173,7 @@ $operations = [
                 $email = $arr['email'];
                 $token = generateRandomString(20);
 
-                sendConfirmation($token, $email);
+                sendConfirmation($token, $email, $query['username']);
 
                 $result = mysqli_query($dbc, "INSERT INTO tokens (user_id, `value`) VALUES ($id, '$token')");
                 if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
