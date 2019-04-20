@@ -1,5 +1,29 @@
 <?php
 
+require_once 'Mail.php';
+
+function sendConfirmation($token, $email) {
+    $from = "<no-reply@checkchecker.com>";
+    $to   = "<" . $email . ">";
+    $subject = "Confirm registration";
+    $body = '
+        Click <a href="http://3.89.196.174/checkchecker/newapi.php?operation=verifyToken&token='.$token.'">here</a> to confirm your account
+    ';
+    $headers = [
+        'From' => $from,
+        'To' => $to,
+        'Subject' => $subject
+    ];
+    $smtp = Mail::factory('smtp', [
+        'host' => 'ssl://smtp.gmail.com',
+        'port' => '465',
+        'auth' => true,
+        'username' => 'noreply.checkchecker@gmail.com',
+        'password' => 'wkvaJ?46msbYAbbT'
+    ]);
+    $smtp->send($to, $headers, $body);
+}
+
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -69,11 +93,13 @@ $operations = [
             executeInsert($dbc, "users", $args, function(){}, $rejectMYSQLError);
             $result = mysqli_query($dbc, "SELECT user_id FROM users WHERE `username` = '" . $query['username'] . "'");
             if ($result) {
-                $id = mysqli_fetch_array($result)['user_id'];
+                $arr = mysqli_fetch_array($result);
+                $id = $arr['user_id'];
+                $email = $arr['email'];
                 $token = generateRandomString(20);
-                //mail($query['email'], "CheckChecker", "http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token=$token");
-                echo "http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token=$token\n";
-                echo "INSERT INTO tokens (user_id, `value`) VALUES (".$id.", '$token')";
+
+
+
                 $result = mysqli_query($dbc, "INSERT INTO tokens (user_id, `value`) VALUES ($id, '$token')");
                 if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
             } else $rejectMYSQLError(mysqli_error($dbc));
@@ -122,6 +148,7 @@ $operations = [
                 if ($row = mysqli_fetch_array($result)) {
                     $id = $row['user_id'];
                     if (!mysqli_query($dbc, "UPDATE users SET approved = 1 WHERE user_id = ".$id)) $rejectMYSQLError(mysqli_error($dbc)); else $resolve(true);
+                    echo "<script>window.close()</script>";
                 } else $rejectArgumentError('token');
             } else $rejectMYSQLError(mysqli_error($dbc));
         } else $rejectArgumentError('token');
