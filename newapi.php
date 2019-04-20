@@ -23,7 +23,7 @@ function sendConfirmation($token, $email) {
     ';
     $mail = new PHPMailer();
     $mail->isSMTP();
-    $mail->SMTPDebug = 1;
+    $mail->SMTPDebug = 0;
     $mail->SMTPAuth = true;
     $mail->isHTML(true);
     $mail->SMTPSecure = 'ssl'; // secure transfer enabled REQUIRED for GMail
@@ -35,12 +35,8 @@ function sendConfirmation($token, $email) {
     $mail->Subject = $subject;
     $mail->Body = $body;
     $mail->addAddress($to);
-    try {
-        if (!$mail->send()) {
-            echo $mail->ErrorInfo;
-        }
-    } catch (\PHPMailer\PHPMailer\Exception $e) {
-        echo $e->getMessage();
+    if (!$mail->send()) {
+        throw new \Exception($mail->ErrorInfo);
     }
 }
 
@@ -371,47 +367,52 @@ $methods = [$_GET, $_POST];
 
 foreach ($methods as $query) if (isset($query['operation'])) {
     $name = $query['operation'];
-    if (isset($operations[$name])) $operations[$name](
-        function ($result, $query) {
-            $output = [
-                'success' => "true",
-                'result' => null
-            ];
-            if ($result === true) {
-                $output['result'] = [];
-                $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-                @socket_connect($socket, '127.0.0.1', 8080);
-                $msg = ["type" => "update"];
-                if (isset($query['client_id'])) $msg['client_id'] = $query['client_id'];
-                @socket_write($socket, json_encode($msg));
-            } else if (gettype($result) == "array") {
-                foreach ($result as $key => $value) {
+    if (isset($operations[$name])) try {
+        $operations[$name](
+            function ($result, $query) {
+                $output = [
+                    'success' => "true",
+                    'result' => null
+                ];
+                if ($result === true) {
+                    $output['result'] = [];
+                    $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+                    @socket_connect($socket, '127.0.0.1', 8080);
+                    $msg = ["type" => "update"];
+                    if (isset($query['client_id'])) $msg['client_id'] = $query['client_id'];
+                    @socket_write($socket, json_encode($msg));
+                } else if (gettype($result) == "array") {
+                    foreach ($result as $key => $value) {
+                        $toJSON = [];
+                        while ($row = mysqli_fetch_array($value)) {
+                            array_push($toJSON, $row);
+                        }
+                        $output['result'][$key] = $toJSON;
+                    }
+                } else {
                     $toJSON = [];
-                    while ($row = mysqli_fetch_array($value)) {
+                    while ($row = mysqli_fetch_array($result)) {
+
                         array_push($toJSON, $row);
                     }
-                    $output['result'][$key] = $toJSON;
+                    $output['result'] = $toJSON;
                 }
-            } else {
-                $toJSON = [];
-                while ($row = mysqli_fetch_array($result)) {
+                echo json_encode($output);
+            },
+            function (...$errors) {
+                echo '{"success":"false", "error":"Bad arguments: ' . implode(", ", $errors) . '"}';
+            },
+            function ($err) {
+                echo '{"success":"false", "error":"MYSQL error: ' . $err . '"}';
+            },
+            $dbc,
+            $query
+        );
+    } catch (\Exception $e) {
+        echo '{"success":"false", "error":"'.$e->getMessage().'"}';
+    }
+} else echo '{"success":"false", "error":"No such operation exists"}';
 
-                    array_push($toJSON, $row);
-                }
-                $output['result'] = $toJSON;
-            }
-            echo json_encode($output);
-        },
-        function (...$errors) {
-            echo '{"success":"false", "error":"Bad arguments: ' . implode(", ", $errors) . '"}';
-        },
-        function ($err) {
-            echo '{"success":"false", "error":"MYSQL error: '. $err . '"}';
-        },
-        $dbc,
-        $query
-    ); else echo '{"success":"false", "error":"No such operation exists"}';
-}
 
 
 // dima pidor
