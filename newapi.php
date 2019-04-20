@@ -10,8 +10,8 @@ require 'phpmailer/src/Exception.php';
 require 'phpmailer/src/PHPMailer.php';
 require 'phpmailer/src/SMTP.php';
 
-define('GUSER', 'noreply.checkchecker@gmail.com'); // GMail username
-define('GPWD', 'wkvaJ?46msbYAbbT'); // GMail password
+define('GUSER', 'no.reply.checkchecker0@gmail.com'); // GMail username
+define('GPWD', 'F429D420086F70A3B72B10BFF0446D87DEA2A385AD9EA49A135E547414D91CC2'); // GMail password
 
 
 function sendConfirmation($token, $email) {
