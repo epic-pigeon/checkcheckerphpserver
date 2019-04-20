@@ -31,12 +31,12 @@ function sendConfirmation($token, $email) {
     $mail->Port = 465;
     $mail->Username = GUSER;
     $mail->Password = GPWD;
-    $mail->setFrom($from, "CheckChecker");
+    $mail->SetFrom($from, "CheckChecker");
     $mail->Subject = $subject;
     $mail->Body = $body;
-    $mail->addAddress($to);
+    $mail->AddAddress($to);
     if (!$mail->send()) {
-        throw new \Exception($mail->ErrorInfo);
+        throw new \Exception($mail->ErrorInfo . "(" . $email . ")");
     }
 }
 
@@ -66,7 +66,7 @@ function executeInsert($dbc, $table, $args, $resolve, $rejectMYSQLError) {
     $query .= ") VALUES (";
     $array = [];
     foreach ($args as $k => $v) {
-        array_push($array, "'".str_replace("'", "\\'", $v)."'");
+        array_push($array, "'".mysqli_real_escape_string($dbc, $v)."'");
     }
     $query .= implode(", ", $array);
     $query .= ")";
