@@ -19,7 +19,7 @@ function sendConfirmation($token, $email) {
     $to   = $email;
     $subject = "Confirm registration";
     $body = '
-        Click <a href="http://3.89.196.174/checkchecker/newapi.php?operation=verifyToken&token='.$token.'">here</a> to confirm your account
+        Click <a href="http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token='.$token.'">here</a> to confirm your account
     ';
     $mail = new PHPMailer();
     $mail->isSMTP();
