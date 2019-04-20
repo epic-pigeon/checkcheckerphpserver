@@ -35,7 +35,9 @@ function sendConfirmation($token, $email) {
     $mail->Body = $body;
     $mail->addAddress($to);
     try {
-        $mail->send();
+        if (!$mail->send()) {
+            echo $mail->ErrorInfo;
+        }
     } catch (\PHPMailer\PHPMailer\Exception $e) {
         echo $e->getMessage();
     }
