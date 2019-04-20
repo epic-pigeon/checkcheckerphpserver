@@ -75,7 +75,7 @@ function sendConfirmation($token, $email, $username) {
 <div class="header"></div>
 <div class="main">
     <span class="welcome">Welcome to CheckChecker</span><br>
-    <span class="text">Hi username, welcome to CheckChecker, please confirm your email address to get started:</span><br>
+    <span class="text">Hi '.$username.', welcome to CheckChecker, please confirm your email address to get started:</span><br>
     <div class="button"><a href="http://3.89.196.174/checkchecker/newapi.php?operation=verifyUser&token='.$token.'">
         <span class="button-text">Confirm my email</span>
     </a></div>
