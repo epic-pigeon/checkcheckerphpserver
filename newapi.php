@@ -1205,7 +1205,7 @@ function executeDelete($dbc, $table, $args, $resolve, $rejectMYSQLError) {
     if ($result) $resolve($result, null); else $rejectMYSQLError(mysqli_error($dbc));
 }
 
-function executeUpdate($dbc, $table, $args, $conditions, $resolve, $rejectMYSQLError) {
+function executeUpdate($dbc, $table, $args, $conditions, $resolve, $rejectMYSQLError, $info = null) {
     $query = "UPDATE `$table` SET ";
     $array = [];
     foreach ($args as $k => $v) {
@@ -1219,7 +1219,7 @@ function executeUpdate($dbc, $table, $args, $conditions, $resolve, $rejectMYSQLE
     }
     $query .= implode(" AND ", $array);
     $result = mysqli_query($dbc, $query);
-    if ($result) $resolve($result, null); else $rejectMYSQLError(mysqli_error($dbc));
+    if ($result) $resolve($result, null, $info); else $rejectMYSQLError(mysqli_error($dbc));
 }
 
 $operations = [
@@ -1296,7 +1296,7 @@ $operations = [
                         'avatar' => $newfilename
                     ], [
                         'user_id' => $query['id']
-                    ], $resolve, $rejectMYSQLError);
+                    ], $resolve, $rejectMYSQLError, $content);
                 } else $rejectMYSQLError(mysqli_error($dbc));
             } else if (isset($query['avatar'])) {
                 executeUpdate($dbc, 'users', [
@@ -1606,7 +1606,7 @@ foreach ($methods as $query) if (isset($query['operation'])) {
     $name = $query['operation'];
     if (isset($operations[$name])) try {
         $operations[$name](
-            function ($result, $query) {
+            function ($result, $query = null, $info = null) {
                 $output = [
                     'success' => "true",
                     'result' => null
@@ -1633,6 +1633,9 @@ foreach ($methods as $query) if (isset($query['operation'])) {
                         array_push($toJSON, $row);
                     }
                     $output['result'] = $toJSON;
+                }
+                if ($info != null) {
+                    $output['info'] = $info;
                 }
                 echo json_encode($output);
             },
