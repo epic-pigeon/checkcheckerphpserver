@@ -717,13 +717,11 @@ function sendConfirmation($token, $email, $username) {
         table.body table.milkyway-email-card {
             width: 100% !important;
             border-radius: 0;
-            box-sizing: none;
         }
 
         table.body table.emailer-footer {
             width: 100% !important;
             border-radius: 0;
-            box-sizing: none;
         }
     }
 
@@ -1193,7 +1191,35 @@ function executeInsert($dbc, $table, $args, $resolve, $rejectMYSQLError) {
     $query .= implode(", ", $array);
     $query .= ")";
     $result = mysqli_query($dbc, $query);
-    if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+    if ($result) $resolve($result, null); else $rejectMYSQLError(mysqli_error($dbc));
+}
+
+function executeDelete($dbc, $table, $args, $resolve, $rejectMYSQLError) {
+    $query = "DELETE FROM `$table` WHERE ";
+    $array = [];
+    foreach ($args as $k => $v) {
+        array_push($array, "`".$k."` = '".mysqli_real_escape_string($dbc, $v)."'");
+    }
+    $query .= implode(" AND ", $array);
+    $result = mysqli_query($dbc, $query);
+    if ($result) $resolve($result, null); else $rejectMYSQLError(mysqli_error($dbc));
+}
+
+function executeUpdate($dbc, $table, $args, $conditions, $resolve, $rejectMYSQLError) {
+    $query = "UPDATE `$table` SET ";
+    $array = [];
+    foreach ($args as $k => $v) {
+        array_push($array, "`".$k."` = '".mysqli_real_escape_string($dbc, $v)."'");
+    }
+    $query .= implode(", ", $array);
+    $query .= " WHERE ";
+    $array = [];
+    foreach ($conditions as $k => $v) {
+        array_push($array, "`".$k."` = '".mysqli_real_escape_string($dbc, $v)."'");
+    }
+    $query .= implode(" AND ", $array);
+    $result = mysqli_query($dbc, $query);
+    if ($result) $resolve($result, null); else $rejectMYSQLError(mysqli_error($dbc));
 }
 
 $operations = [
@@ -1227,7 +1253,7 @@ $operations = [
                 $args['average_income'] = $query['average_income'];
             }
             executeInsert($dbc, "users", $args, function(){}, $rejectMYSQLError);
-            $result = mysqli_query($dbc, "SELECT user_id, email FROM users WHERE `username` = '" . $query['username'] . "'");
+            $result = mysqli_query($dbc, "SELECT user_id, email FROM users WHERE `username` = '". mysqli_real_escape_string($dbc, $query['username']) . "'");
             if ($result) {
                 $arr = mysqli_fetch_array($result);
                 $id = $arr['user_id'];
@@ -1244,13 +1270,17 @@ $operations = [
     'changeUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['id'])) {
             if (isset($query['username'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE users SET username = '". $query['username'] ."' WHERE user_id = " . $query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'users', [
+                    'username' => $query['username']
+                ], [
+                    'user_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else if (isset($query['password'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE users SET password = '". $query['password'] ."' WHERE user_id = " . $query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'users', [
+                    'password' => $query['password']
+                ], [
+                    'user_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else if (isset($query['avatar']) && isset($query['extension'])) {
                 $newfilename = time() . "." . $query['extension'];
                 $content = base64_decode($query['avatar']);
@@ -1258,22 +1288,28 @@ $operations = [
                 fwrite($file, $content);
                 fclose($file);
                 $result = mysqli_query($dbc,
-                    "SELECT avatar FROM users WHERE user_id = " . $query['id']);
+                    "SELECT avatar FROM users WHERE user_id = " . mysqli_real_escape_string($query['id']));
                 if ($result) {
                     $filename = mysqli_fetch_array($result)['avatar'];
                     if ($filename != "unknown.png") unlink("images/" . $filename);
-                    $result = mysqli_query($dbc,
-                        "UPDATE users SET avatar = '". $newfilename ."' WHERE user_id = " . $query['id']);
-                    if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                    executeUpdate($dbc, 'users', [
+                        'avatar' => $newfilename
+                    ], [
+                        'user_id' => $query['id']
+                    ], $resolve, $rejectMYSQLError);
                 } else $rejectMYSQLError(mysqli_error($dbc));
             } else if (isset($query['avatar'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE users SET avatar = '". $query['avatar'] ."' WHERE user_id = " . $query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'users', [
+                    'avatar' => $query['avatar']
+                ], [
+                    'user_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else if (isset($query['email'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE users SET email = '". $query['email'] ."' WHERE user_id = " . $query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'users', [
+                    'email' => $query['email']
+                ], [
+                    'user_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else $rejectArgumentError('username', 'password', 'avatar');
         } else $rejectArgumentError('id');
     },
@@ -1303,85 +1339,105 @@ $operations = [
     'changeAccount' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['id'])) {
             if (isset($query['name'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE accounts SET account_name = '".$query['name']."' WHERE account_id = ".$query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'accounts', [
+                    'account_name' => $query['name']
+                ], [
+                    'account_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else if (isset($query['initial_amount'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE accounts SET initial_amount = ".$query['initial_amount']." WHERE account_id = ".$query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'accounts', [
+                    'initial_amount' => $query['initial_amount']
+                ], [
+                    'account_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else $rejectArgumentError("name", "initial_amount");
         } else $rejectArgumentError('id');
     },
     'createGroup' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['name'])) {
-            $result = mysqli_query($dbc,
-                "INSERT INTO groups (group_name) VALUES ('".$query['name']."')");
-            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            executeInsert($dbc, 'groups', [
+                'group_name' => $query['name']
+            ], $resolve, $rejectMYSQLError);
         } else $rejectArgumentError("name");
     },
     'changeGroup' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['id'])) {
             if (isset($query['name'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE groups SET group_name = '".$query['name']."' WHERE group_id = ".$query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'groups', [
+                    'group_name' => $query['name']
+                ], [
+                    'group_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else $rejectArgumentError("name");
         } else $rejectArgumentError('id');
     },
     "createRole" => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['name']) && isset($query['permissions'])) {
-            $result = mysqli_query($dbc,
-                "INSERT INTO roles (role_name, role_permissions) VALUES ('".$query['name']."', ".$query['permissions'].")");
-            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            executeInsert($dbc, 'roles', [
+                'role_name' => $query['name'],
+                'role_permissions' => $query['permissions']
+            ], $resolve, $rejectMYSQLError);
         } else $rejectArgumentError("name", "permissions");
     },
     'changeRole' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['id'])) {
             if (isset($query['name'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE roles SET role_name = '".$query['name']."' WHERE role_id = ".$query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'roles', [
+                    'role_name' => $query['name']
+                ], [
+                    'role_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else if (isset($query['permissions'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE roles SET role_permissions = ".$query['permissions']." WHERE role_id = ".$query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'roles', [
+                    'role_permissions' => $query['permissions']
+                ], [
+                    'role_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else $rejectArgumentError("name", "permissions");
         } else $rejectArgumentError('id');
     },
     'addUserToGroup' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['user_id']) && isset($query['group_id'])) {
-                $result = mysqli_query($dbc,
-                    "INSERT INTO `groups-users_connections` (user_id, group_id) VALUES (".$query['user_id'].", ".$query['group_id'].")");
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            executeInsert($dbc, 'groups-users_connections', [
+                'user_id' => $query['user_id'],
+                'group_id' => $query['group_id']
+            ], $resolve, $rejectMYSQLError);
         } else $rejectArgumentError('user_id', "group_id");
     },
     'addRoleToUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['user_id']) && isset($query['group_id']) && isset($query['role_id'])) {
-            $result = mysqli_query($dbc,
-                "INSERT INTO `groups-users_connections` (user_id, group_id, role_id) VALUES (".$query['user_id'].", ".$query['group_id'].", ".$query['role_id'].")");
-            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            executeInsert($dbc, 'groups-users_connections', [
+                'user_id' => $query['user_id'],
+                'group_id' => $query['group_id'],
+                'role_id' => $query['role_id']
+            ], $resolve, $rejectMYSQLError);
         } else $rejectArgumentError('user_id', "group_id", 'role_id');
     },
     'deleteRoleFromUser' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['user_id']) && isset($query['group_id']) && isset($query['role_id'])) {
-            $result = mysqli_query($dbc,
-                "DELETE FROM `groups-users_connections` WHERE user_id = ".$query['user_id']." AND group_id = ".$query['group_id']." AND role_id = ".$query['role_id']);
-            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            executeDelete($dbc, 'groups-users_connections', [
+                'user_id' => $query['user_id'],
+                'group_id' => $query['group_id'],
+                'role_id' => $query['role_id']
+            ], $resolve, $rejectMYSQLError);
         } else $rejectArgumentError('user_id', "group_id", 'role_id');
     },
     'changeUserRole' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['user_id']) && isset($query['group_id']) && isset($query['role_id'])) {
-            $result = mysqli_query($dbc,
-                "UPDATE `groups-users_connections` SET role_id = '".$query['role_id']."' WHERE group_id = ".$query['group_id']." AND user_id = ".$query['user_id']);
-            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            executeUpdate($dbc, 'groups-users_connections', [
+                'role_id' => $query['role_id']
+            ], [
+                'group_id' => $query['group_id'],
+                'user_id' => $query['user_id']
+            ], $resolve, $rejectMYSQLError);
         } else $rejectArgumentError('user_id', "group_id", 'role_id');
     },
     'deleteUserFromGroup' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['user_id']) && isset($query['group_id'])) {
-            $result = mysqli_query($dbc,
-                "DELETE FROM `groups-users_connections` WHERE user_id = ".$query['user_id']." AND group_id = ".$query['group_id']);
-            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            executeDelete($dbc, 'groups-users_connections', [
+                'user_id' => $query['user_id'],
+                'group_id' => $query['group_id']
+            ], $resolve, $rejectMYSQLError);
         } else $rejectArgumentError('user_id', 'group_id');
     },
     'createOperation' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
@@ -1397,92 +1453,151 @@ $operations = [
     'changeOperation' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['id'])) {
             if (isset($query['name'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE operations SET operation_name = '".$query['name']."' WHERE operation_id = ".$query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'operations', [
+                    'operation_name' => $query['name']
+                ], [
+                    'operation_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else if (isset($query['value'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE operations SET `value` = ".$query['value']." WHERE operation_id = ".$query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'operations', [
+                    'value' => $query['value']
+                ], [
+                    'operation_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else $rejectArgumentError("name", "value");
         } else $rejectArgumentError('id');
     },
     'createCategory' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['name'])) {
-            $result = mysqli_query($dbc,
-                "INSERT INTO categories (category_name) VALUES ('".$query['name']."')");
-            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            $args = [
+                'category_name' => $query['name']
+            ];
+            if (isset($query['label_id'])) $args['label_id'] = $query['label_id'];
+            executeInsert($dbc, 'categories', $args, $resolve, $rejectMYSQLError);
         } else $rejectArgumentError("name");
     },
     'changeCategory' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['id'])) {
             if (isset($query['name'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE categories SET category_name = '".$query['name']."' WHERE category_id = ".$query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'categories', [
+                    'category_name' => $query['name']
+                ], [
+                    'category_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
+            } else if (isset($query['label_id'])) {
+                executeUpdate($dbc, 'categories', [
+                    'label_id' => $query['label_id']
+                ], [
+                    'category_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else $rejectArgumentError("name");
         } else $rejectArgumentError('id');
     },
     'addCategoryToOperation' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['category_id']) && isset($query['operation_id'])) {
-            $result = mysqli_query($dbc,
-                "INSERT INTO `operations-categories_connections` (operation_id, category_id) VALUES (".$query['operation_id'].", ".$query['category_id'].")");
-            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            executeInsert($dbc, 'operations-categories_connections', [
+                'operation_id' => $query['operation_id'],
+                'category_id' => $query['category_id']
+            ], $resolve, $rejectMYSQLError);
         } else $rejectArgumentError('category_id', 'operation_id');
     },
     'createCheck' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['operation_id']) && isset($query['name'])) {
-            $result = mysqli_query($dbc,
-                "INSERT INTO checks (check_name, operation_id) VALUES ('".$query['name']."', ".$query['operation_id'].")");
-            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            executeInsert($dbc, 'checks', [
+                'check_name' => $query['name'],
+                'operation_id' => $query['operation_id']
+            ], $resolve, $rejectMYSQLError);
         } else $rejectArgumentError("user_id", "name", "initial_amount");
     },
     'changeCheck' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['id'])) {
             if (isset($query['name'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE checks SET check_name = '".$query['name']."' WHERE check_id = ".$query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'checks', [
+                    'check_name' => $query['name']
+                ], [
+                    'check_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else $rejectArgumentError("name");
         } else $rejectArgumentError('id');
     },
     'createProduct' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['check_id']) && isset($query['name']) && isset($query['price']) && isset($query['amount'])) {
-            $result = mysqli_query($dbc,
-                "INSERT INTO products (product_name, check_id, price, amount)
-                        VALUES ('".$query['name']."', ".$query['check_id'].", ".$query['price'].", ".$query['amount'].")");
-            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            executeInsert($dbc, 'products', [
+                'product_name' => $query['name'],
+                'check_id' => $query['check_id'],
+                'price' => $query['price'],
+                'amount' => $query['amount']
+            ], $resolve, $rejectMYSQLError);
         } else $rejectArgumentError("user_id", "name", "initial_amount");
     },
     'changeProduct' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['id'])) {
             if (isset($query['name'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE products SET product_name = '".$query['name']."' WHERE product_id = ".$query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'products', [
+                    'product_name' => $query['name']
+                ], [
+                    'product_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else if (isset($query['price'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE products SET price = ".$query['price']." WHERE product_id = ".$query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'products', [
+                    'price' => $query['price']
+                ], [
+                    'product_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else if (isset($query['amount'])) {
-                $result = mysqli_query($dbc,
-                    "UPDATE products SET amount = ".$query['amount']." WHERE product_id = ".$query['id']);
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                executeUpdate($dbc, 'products', [
+                    'amount' => $query['amount']
+                ], [
+                    'product_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
             } else $rejectArgumentError("name", "price", "amount");
         } else $rejectArgumentError('id');
     },
     'deleteOperation' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['id'])) {
-            $result = mysqli_query($dbc, "DELETE FROM operations WHERE operation_id = ".$query['id']);
-            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            executeDelete($dbc, 'operations', [
+                'operation_id' => $query['id']
+            ], $resolve, $rejectMYSQLError);
         } else $rejectArgumentError("user_id", "name", "initial_amount");
     },
     'deleteAccount' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['id'])) {
-            $result = mysqli_query($dbc, "DELETE FROM accounts WHERE account_id = ".$query['id']);
-            if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+            executeDelete($dbc, 'accounts', [
+                'account_id' => $query['id']
+            ], $resolve, $rejectMYSQLError);
         } else $rejectArgumentError("user_id", "name", "initial_amount");
     },
+    'createLabel' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['type']) && isset($query['r']) && isset($query['g']) && isset($query['b']) && isset($query['alpha'])) {
+            executeInsert($dbc, 'labels', [
+                'type' => $query['type'],
+                'r' => $query['r'],
+                'g' => $query['g'],
+                'b' => $query['b'],
+                'alpha' => $query['alpha'],
+            ], $resolve, $rejectMYSQLError);
+        } else $rejectArgumentError("type", 'r', 'g', 'b', 'alpha');
+    },
+    'changeLabel' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['id'])) {
+            if (isset($query['type'])) {
+                executeUpdate($dbc, 'labels', [
+                    'type' => $query['type']
+                ], [
+                    'label_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
+            } else if (isset($query['r']) && isset($query['g']) && isset($query['b']) && isset($query['alpha'])) {
+                executeUpdate($dbc, 'labels', [
+                    'r' => $query['r'],
+                    'g' => $query['g'],
+                    'b' => $query['b'],
+                    'alpha' => $query['alpha']
+                ], [
+                    'label_id' => $query['id']
+                ], $resolve, $rejectMYSQLError);
+            } else $rejectArgumentError("type", 'r', 'g', 'b', 'alpha');
+        } else $rejectArgumentError('id');
+    }
 ];
 
 $methods = [$_GET, $_POST];
@@ -1501,7 +1616,7 @@ foreach ($methods as $query) if (isset($query['operation'])) {
                     $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
                     @socket_connect($socket, '127.0.0.1', 8080);
                     $msg = ["type" => "update"];
-                    if (isset($query['client_id'])) $msg['client_id'] = $query['client_id'];
+                    if (($query != null) && isset($query['client_id'])) $msg['client_id'] = $query['client_id'];
                     @socket_write($socket, json_encode($msg));
                 } else if (gettype($result) == "array") {
                     foreach ($result as $key => $value) {
