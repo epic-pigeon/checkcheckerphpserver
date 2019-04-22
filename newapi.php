@@ -1288,7 +1288,7 @@ $operations = [
                 fwrite($file, $content);
                 fclose($file);
                 $result = mysqli_query($dbc,
-                    "SELECT avatar FROM users WHERE user_id = " . mysqli_real_escape_string($query['id']));
+                    "SELECT avatar FROM users WHERE user_id = " . mysqli_real_escape_string($dbc, $query['id']));
                 if ($result) {
                     $filename = mysqli_fetch_array($result)['avatar'];
                     if ($filename != "unknown.png") unlink("images/" . $filename);
