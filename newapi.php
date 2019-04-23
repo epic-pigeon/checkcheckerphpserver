@@ -1464,6 +1464,9 @@ $operations = [
                 ], [
                     'operation_id' => $query['id']
                 ], $resolve, $rejectMYSQLError);
+            } else if (isset($query['timestamp'])) {
+                $result = mysqli_query($dbc, "UPDATE operations SET added_timestamp = FROM_UNIXTIME(".$query['timestamp'].") WHERE operation_id = ".$query['id']);
+                if ($result) $resolve($result, $query, null); else $rejectMYSQLError(mysqli_error($dbc));
             } else $rejectArgumentError("name", "value");
         } else $rejectArgumentError('id');
     },
