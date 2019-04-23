@@ -1471,9 +1471,10 @@ $operations = [
         } else $rejectArgumentError('id');
     },
     'createCategory' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
-        if (isset($query['name'])) {
+        if (isset($query['name']) && isset($query['user_id'])) {
             $args = [
-                'category_name' => $query['name']
+                'category_name' => $query['name'],
+                'user_id' => $query['user_id']
             ];
             if (isset($query['label_id'])) $args['label_id'] = $query['label_id'];
             executeInsert($dbc, 'categories', $args, $resolve, $rejectMYSQLError);
