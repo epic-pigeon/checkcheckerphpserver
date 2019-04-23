@@ -1191,7 +1191,7 @@ function executeInsert($dbc, $table, $args, $resolve, $rejectMYSQLError) {
     $query .= implode(", ", $array);
     $query .= ")";
     $result = mysqli_query($dbc, $query);
-    if ($result) $resolve($result, null); else $rejectMYSQLError(mysqli_error($dbc));
+    if ($result) $resolve($result, null, null, mysqli_insert_id($dbc)); else $rejectMYSQLError(mysqli_error($dbc));
 }
 
 function executeDelete($dbc, $table, $args, $resolve, $rejectMYSQLError) {
@@ -1610,7 +1610,7 @@ foreach ($methods as $query) if (isset($query['operation'])) {
     $name = $query['operation'];
     if (isset($operations[$name])) try {
         $operations[$name](
-            function ($result, $query = null, $info = null) {
+            function ($result, $query = null, $info = null, $lastID = null) {
                 $output = [
                     'success' => "true",
                     'result' => null
@@ -1640,6 +1640,9 @@ foreach ($methods as $query) if (isset($query['operation'])) {
                 }
                 if ($info != null) {
                     $output['info'] = $info;
+                }
+                if ($lastID != null) {
+                    $output['last_id'] = $lastID;
                 }
                 echo json_encode($output);
             },
