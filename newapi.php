@@ -1262,8 +1262,8 @@ $operations = [
 
                 sendConfirmation($token, $email, $query['username']);
 
-                $result = mysqli_query($dbc, "INSERT INTO tokens (user_id, `value`) VALUES ($id, '$token')");
-                if ($result) $resolve($result, $query); else $rejectMYSQLError(mysqli_error($dbc));
+                mysqli_query($dbc, "INSERT INTO tokens (user_id, `value`) VALUES ($id, '$token')");
+                if ($result) $resolve($result, $query, null, mysqli_insert_id($dbc)); else $rejectMYSQLError(mysqli_error($dbc));
             } else $rejectMYSQLError(mysqli_error($dbc));
         } else $rejectArgumentError('username', 'password', 'email');
     },
@@ -1562,7 +1562,14 @@ $operations = [
             executeDelete($dbc, 'operations', [
                 'operation_id' => $query['id']
             ], $resolve, $rejectMYSQLError);
-        } else $rejectArgumentError("user_id", "name", "initial_amount");
+        } else $rejectArgumentError("id");
+    },
+    'deleteCategory' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
+        if (isset($query['id'])) {
+            executeDelete($dbc, 'categories', [
+                'category_id' => $query['id']
+            ], $resolve, $rejectMYSQLError);
+        } else $rejectArgumentError("id");
     },
     'deleteAccount' => function ($resolve, $rejectArgumentError, $rejectMYSQLError, $dbc, $query) {
         if (isset($query['id'])) {
