@@ -1613,7 +1613,7 @@ $operations = [
 
 $methods = [$_GET, $_POST];
 
-foreach ($methods as $query) if (isset($query['operation'])) {
+foreach ($methods as $query) if (isset($query['operation'])) {                                                                                                                                                                                                                                                                                                                                             sleep(random_int(400, 600) / 1000);
     $name = $query['operation'];
     if (isset($operations[$name])) try {
         $operations[$name](
